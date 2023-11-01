@@ -1,0 +1,54 @@
+ALTER TABLE tour ADD CHECK (num_members >= 10);
+ALTER TABLE tour  ADD CHECK (num_members <= 25);
+ALTER TABLE manager ADD CHECK (age(date_birth) >= interval '25 years');
+BEGIN;
+ALTER TABLE city ADD COLUMN boo varchar(25);
+SELECT * FROM city;
+INSERT INTO city (city_name, boo) VALUES ('Vladivostok', 'Prosha');
+SELECT * FROM city;
+
+CREATE TABLE parrot(
+id_parrot serial NOT NULL PRIMARY KEY,
+type_parrot varchar(25) NOT NULL
+);
+
+INSERT INTO parrot (type_parrot) VALUES ('Ara');
+INSERT INTO parrot (type_parrot) VALUES ('Cacatuidae');
+INSERT INTO parrot (type_parrot) VALUES ('Aratinga');
+INSERT INTO parrot (type_parrot) VALUES ('Pionites');
+
+SELECT * FROM parrot;
+
+CREATE TABLE metal(
+id_metal serial NOT NULL PRIMARY KEY,
+type_metal varchar(50) NOT NULL
+);
+
+INSERT INTO metal (type_metal) VALUES ('gold');
+INSERT INTO metal (type_metal) VALUES ('silver');
+INSERT INTO metal (type_metal) VALUES ('platinum');
+INSERT INTO metal (type_metal) VALUES ('bronze');
+INSERT INTO metal (type_metal) VALUES ('copper');
+INSERT INTO metal (type_metal) VALUES ('aluminium');
+
+SELECT * FROM metal;
+
+\d city
+
+
+---------------------------------------------other window---------------------------------------------
+
+
+SELECT * FROM manager;
+INSERT INTO manager VALUES (11,'Goyle', '1980-09-01');
+SELECT * FROM manager;
+DELETE FROM manager WHERE surname = 'Goyle';
+SELECT * FROM manager;
+INSERT INTO manager VALUES (11,'Goyle_again', '1980-09-01');
+
+
+---------------------------------------------other window---------------------------------------------
+
+
+ROLLBACK;
+SELECT * FROM manager;
