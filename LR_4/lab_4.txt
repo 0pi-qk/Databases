@@ -1,0 +1,26 @@
+Найти всех руководителей туров, которые обслуживают только автобусные туры и выполнившие заказы на туры со 
+стоимостью больше, чем средняя стоимость заказов на все туры, выполненные за последние три месяца.
+
+SELECT surname FROM manager 
+JOIN tour ON manager.id_manager = tour.id_manager 
+JOIN info ON tour.id_info = info.id_info
+WHERE type_tour = 'bus' AND price_tour > (SELECT avg(price_tour) 
+FROM info WHERE date_tour > (current_date - interval '3 month') AND date_tour  < current_date)
+GROUP BY price_tour,surname;
+
+Найти все туры, выполненные за последний месяц, и со стоимостью больше, чем средняя стоимость железнодорожных 
+туров, выполненных за последние две недели.
+
+SELECT * FROM info 
+WHERE date_tour > (current_date - interval '1 month') AND date_tour  < current_date AND
+price_tour > (SELECT avg(price_tour) FROM info WHERE type_tour = 'train' 
+AND date_tour > '2021-10-23' AND date_tour  < current_date);
+
+Найти все авиа туры в страны Турция и Египет, предлагаемые для семейного отдыха и чья стоимость больше, чем средняя
+стоимость туров, позиционируемых как туры-шопинги.
+
+SELECT *FROM info 
+JOIN city ON city.id_city = info.id_city
+WHERE type_tour = 'plane' AND (country='Turkce' OR country='Egypt') 
+AND variation_tour = 'family' AND price_tour >(SELECT avg(price_tour) 
+FROM info WHERE variation_tour = 'shopping');
