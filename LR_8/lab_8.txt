@@ -1,0 +1,142 @@
+CREATE DATABASE lr8;
+
+
+CREATE TABLE city(
+id_city serial NOT NULL PRIMARY KEY,
+city_name varchar(25) NOT NULL,
+country varchar(25) NOT NULL
+);
+
+INSERT INTO city VALUES (1,'Makhachkala','Russia');
+INSERT INTO city VALUES (2,'Moscow','Poland');
+INSERT INTO city VALUES (3,'Ufa','Russia');
+INSERT INTO city VALUES (4,'Tver','Germany');
+INSERT INTO city VALUES (5,'Kazan','Poland');
+INSERT INTO city VALUES (6,'Kursk','Germany');
+INSERT INTO city VALUES (7,'Minsk','Poland');
+INSERT INTO city VALUES (8,'Zlatoust','Russia');
+INSERT INTO city VALUES (9,'Omsk','Germany');
+INSERT INTO city VALUES (10,'Bryansk','Poland');
+INSERT INTO city VALUES (11,'Kaliningrad','Russia');
+
+CREATE TABLE manager(
+id_manager serial NOT NULL PRIMARY KEY,
+surname varchar(20) NOT NULL,
+date_birth date NOT NULL,
+experience integer NOT NULL
+);
+
+ALTER TABLE manager ADD CHECK (date_birth<=current_date);
+INSERT INTO manager VALUES (1,'McGonagall','1935-10-04',11);
+INSERT INTO manager VALUES (2,'Riddle','1931-12-31',6);
+INSERT INTO manager VALUES (3,'Black','1959-11-03',7);
+INSERT INTO manager VALUES (4,'Weasley','1950-02-06',9);
+INSERT INTO manager VALUES (5,'Johnson','1977-10-25',3);
+INSERT INTO manager VALUES (6,'Lovegood','1981-02-13',5);
+INSERT INTO manager VALUES (7,'Delacour','1977-10-30',8);
+INSERT INTO manager VALUES (8,'Malfoy','1980-06-05',6);
+INSERT INTO manager VALUES (9,'Snape','1960-01-09',12);
+INSERT INTO manager VALUES (10,'Longbottom','1980-07-30',5);
+
+CREATE TYPE tour_type AS ENUM (
+'bus',
+'train',
+'plane'
+);
+
+CREATE TYPE variation_tour AS ENUM (
+'family',
+'shopping'
+);
+
+CREATE TABLE info(
+id_info serial NOT NULL PRIMARY KEY,
+type_tour tour_type NOT NULL,
+price_tour integer NOT NULL,
+date_tour date NOT NULL,
+id_city integer NOT NULL,
+variation_tour variation_tour NOT NULL,
+duration integer NOT NULL,
+tour_name varchar(25) NOT NULL,
+FOREIGN KEY (id_city) REFERENCES city (id_city)
+);
+
+INSERT INTO info VALUES (1,'bus',5000,'2021-11-30',9,'family',10,'nm');
+INSERT INTO info VALUES (2,'train',8000,'2022-01-05',6,'shopping',3,'nm');
+INSERT INTO info VALUES (3,'train',10000,'2021-10-25',1,'family',8,'nm');
+INSERT INTO info VALUES (4,'plane',7000,'2022-10-03',2,'shopping',10,'nm');
+INSERT INTO info VALUES (5,'plane',11000,'2022-07-07',7,'family',9,'nm');
+INSERT INTO info VALUES (6,'train',12500,'2021-10-27',10,'shopping',5,'nm');
+INSERT INTO info VALUES (7,'plane',25000,'2022-07-30',4,'family',1,'nm');
+INSERT INTO info VALUES (8,'bus',9000,'2021-12-10',3,'shopping',6,'nm');
+INSERT INTO info VALUES (9,'train',30000,'2021-10-30',5,'family',10,'nm');
+INSERT INTO info VALUES (10,'bus',17600,'2022-06-15',8,'shopping',10,'nm');
+
+CREATE TABLE tour(
+id_tour serial NOT NULL PRIMARY KEY,
+order_date date NOT NULL,
+order_number integer NOT NULL,
+num_members integer NOT NULL,
+id_manager integer NOT NULL,
+FOREIGN KEY (id_manager) REFERENCES manager (id_manager)
+);
+
+INSERT INTO tour VALUES (1,'2021-09-03',106,21,9);
+INSERT INTO tour VALUES (2,'2021-08-10',104,22,10);
+INSERT INTO tour VALUES (3,'2021-09-20',108,23,2);
+INSERT INTO tour VALUES (4,'2021-07-01',103,24,3);
+INSERT INTO tour VALUES (5,'2021-09-26',110,25,5);
+INSERT INTO tour VALUES (6,'2021-01-19',101,24,8);
+INSERT INTO tour VALUES (7,'2021-05-21',102,23,4);
+INSERT INTO tour VALUES (8,'2021-08-30',105,22,6);
+INSERT INTO tour VALUES (9,'2021-09-25',109,21,7);
+INSERT INTO tour VALUES (10,'2021-09-11',107,20,1);
+
+ALTER TABLE tour ADD CHECK (num_members >= 10);
+ALTER TABLE tour  ADD CHECK (num_members <= 25);
+ALTER TABLE manager ADD CHECK (age(date_birth) >= interval '25 years');
+
+
+
+create function delete_trigger() returns trigger as $$
+begin
+if ((select count(*) from info where id_city = old.id_city) > 0) then
+delete from info where id_city = old.id_city;
+end if;
+return old;
+end $$
+language 'plpgsql';
+
+create trigger delitel
+before delete on city for each row
+execute procedure delete_trigger();
+
+
+create sequence NNN increment by 1 start with 100;
+
+
+create or replace function adds() returns trigger as $$
+declare d int;
+begin
+Select max(id_info) into d from info;
+if NEW.tour_name is null then
+NEW.tour_name = 'Tur' || (nextval('NNN'));
+end if;
+if NEW.id_city is null then
+NEW.id_city := 11;
+end if;
+if ((NEW.duration is null) or (NEW.duration <= 7)) and (11::int = NEW.id_city) then
+NEW.duration := 7;
+else
+NEW.duration := 0;
+end if;
+return NEW;
+end; $$
+language 'plpgsql';
+
+create trigger addd
+before insert on info for each row
+execute procedure adds();
+
+
+INSERT INTO info(id_info, type_tour, price_tour, date_tour, variation_tour) VALUES (11,'train',30000,'2021-10-29','family');
