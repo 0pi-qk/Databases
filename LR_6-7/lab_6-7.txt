@@ -1,0 +1,167 @@
+CREATE TABLE city(
+	id_city serial NOT NULL PRIMARY KEY,
+	name_city varchar(50) NOT NULL,
+	country varchar(50) NOT NULL
+);
+
+INSERT INTO city(name_city, country) VALUES('Moscow', 'Russia');
+INSERT INTO city(name_city, country) VALUES('Nursultan', 'Kazakhstan');
+INSERT INTO city(name_city, country) VALUES('Istanbul', 'Turkey');
+INSERT INTO city(name_city, country) VALUES('Washington', 'USA');
+INSERT INTO city(name_city, country) VALUES('Warsaw', 'Poland');
+INSERT INTO city(name_city, country) VALUES('Lviv', 'Ukraine');
+
+CREATE TABLE manager(
+	id_manager serial NOT NULL PRIMARY KEY,
+	surname varchar(50) NOT NULL,
+	date_birth date check(date_birth <= current_date),
+	experience integer check(experience >= 0)
+);
+
+INSERT INTO manager(surname, date_birth, experience) VALUES('Weasley', '1987-10-23', 10);
+INSERT INTO manager(surname, date_birth, experience) VALUES('Potter', '1979-11-07', 18);
+INSERT INTO manager(surname, date_birth, experience) VALUES('Granger', '1980-11-27', 23);
+INSERT INTO manager(surname, date_birth, experience) VALUES('Longbottom', '1992-01-13', 8);CREATE type person_sex AS ENUM(
+	'M', 'W'
+);
+
+CREATE type citizenship AS ENUM(
+	'yes', 'no'
+);
+
+CREATE TABLE client(
+	id_client serial NOT NULL PRIMARY KEY,
+	surname varchar(50) NOT NULL,
+	sex person_sex NOT NULL,
+	age integer NOT NULL,
+	citizen citizenship NOT NULL
+);
+
+INSERT INTO client(surname, sex, age, citizen) VALUES('Brown', 'M', 32, 'yes');
+INSERT INTO client(surname, sex, age, citizen) VALUES('Finnigan', 'M', 29, 'no');
+INSERT INTO client(surname, sex, age, citizen) VALUES('Thomas', 'W', 21, 'yes');
+INSERT INTO client(surname, sex, age, citizen) VALUES('Wood', 'W', 39, 'no');
+INSERT INTO client(surname, sex, age, citizen) VALUES('Bell', 'M', 39, 'no');
+INSERT INTO client(surname, sex, age, citizen) VALUES('Johnson', 'W', 24, 'yes');CREATE type transport_type_tour AS ENUM(
+	'bus', 'train', 'plane'
+);
+
+CREATE TABLE info(
+	id_info serial NOT NULL PRIMARY KEY,
+	type_tour transport_type_tour NOT NULL,
+	price_tour integer NOT NULL check(price_tour > 0),
+	date_tour date NOT NULL,
+	id_city integer NOT NULL,
+	FOREIGN KEY(id_city) REFERENCES city(id_city),
+	purpose varchar(50) NOT NULL,
+	duration integer NOT NULL check(duration > 0)
+);
+
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('plane', 34900, '2021-11-30', 5, 'travel', 7);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('plane', 34900, '2021-11-28', 5, 'shopping', 7);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('bus', 27000, '2021-11-28', 5, 'shopping', 7);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('bus', 27000, '2021-11-30', 5, 'travel', 7);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('train', 50000, '2021-11-30', 6, 'travel', 10);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('plane', 62000, '2021-12-05', 6, 'shopping', 10);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('train', 67000, '2021-12-05', 2, 'shopping', 10);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('bus', 12000, '2021-12-01', 3, 'train', 14);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('bus', 12000, '2021-12-01', 4, 'travel', 14);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('bus', 17000, '2021-12-09', 1, 'travel', 14);
+INSERT INTO info(type_tour, price_tour, date_tour, id_city, purpose, duration) VALUES('plane', 23000, '2021-12-09', 1, 'travel', 14);
+
+CREATE type year_season AS ENUM(
+	'winter', 'spring', 'summer', 'autumn'
+);
+
+CREATE TABLE tour(
+	id_tour serial NOT NULL PRIMARY KEY,
+	order_date date NOT NULL check(order_date <= current_date),
+	id_info int NOT NULL,
+	FOREIGN KEY(id_info) REFERENCES info(id_info),
+	id_manager int NOT NULL,
+	FOREIGN KEY(id_manager) REFERENCES manager(id_manager),
+	num_members int NOT NULL check(num_members > 0),
+	id_client int NOT NULL,
+	FOREIGN KEY(id_client) REFERENCES client(id_client),
+	season year_season NOT NULL
+);
+
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-29', 3, 4, 2, 1, 'autumn');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-29', 4, 2, 5, 4, 'autumn');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-29', 3, 3, 1, 5, 'summer');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-23', 5, 1, 7, 4, 'winter');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-23', 6, 1, 2, 5, 'winter');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-23', 5, 2, 3, 6, 'summer');
+INSERT INTO tour(order_date, id_info, id_manager, num_members, id_client, season) VALUES('2021-11-23', 5, 2, 1, 2, 'winter');
+create function recomendations(person_sex, int) returns table(id_info int) as $$
+select info.id_info from info
+join tour on tour.id_info = info.id_info
+join client on tour.id_client = client.id_client
+where client.sex = $1 and client.age = $2 $$
+language sql;
+
+create function popularity() returns table(popular int, type_tour text) as $$
+select(count(tour.id_info)), info.type_tour from tour
+join info on tour.id_info = info.id_info
+group by info.type_tour $$
+language sql;
+
+create function average() returns table(avg_time int, season text) as $$
+select(avg(info.duration)), tour.season from info
+join tour on tour.id_info = info.id_info
+group by tour.season $$
+language sql;
+
+create function prices() returns table(priceAVG int, priceMAX int, priceMIN int, city text) as $$
+select avg(info.price_tour), max(info.price_tour), min(info.price_tour), city.name_city from info
+join city on info.id_city = city.id_city
+group by city.name_city $$
+language sql;
+
+create function demand() returns table(number int, citizenship text)  as $$
+select(count(tour.id_tour)), client.citizen from tour
+join client on tour.id_client = client.id_client
+group by client.citizen $$
+language sql;
+
+create role moderator with password '00000' login;
+grant select on city to moderator;
+grant insert on city to moderator;
+create role uuuser with password '11111' login;
+grant select on tour, info to uuuser;
+grant select on city, client, manager to uuuser;
+grant insert on tour, info to uuuser;
+grant insert on city, client, manager to uuuser;
+grant update on tour, info to uuuser;
+grant update on city, client, manager to uuuser;
+grant delete on tour, info to uuuser;
+grant delete on city, client, manager to uuuser;
+create role analytic with password '22222' login;
+grant select on tour, info, city, manager, client to analytic;
+create role adm with createdb createrole password '33333' login;
+
+ALTER SYSTEM SET log_statement = mod;
+ALTER SYSTEM SET log_line_prefix = '(pid=%p)';
+SELECT pg_reload_conf();
+
+create index id_name_city on city using btree(name_city);
+create index id_country on city using btree(country);
+create index id_surname on client using btree(surname);
+create index id_sex on client using btree(sex);
+create index id_age on client using btree(age);
+create index id_citizen on client using btree(citizen);
+create index id_surname2 on manager using btree(surname);
+create index id_date_birth on manager using btree(date_birth);
+create index id_experience on manager using btree(experience);
+create index id_type_tour on info using btree(type_tour);
+create index id_price_tour on info using btree(price_tour);
+create index id_date_tour on info using btree(date_tour);
+create index id_purpose on info using btree(purpose);
+create index id_duration on info using btree(duration);
+create index id_order_date on tour using btree(order_date);
+create index id_id_info on tour using btree(id_info);
+create index id_id_manager on tour using btree(id_manager);
+create index id_num_members on tour using btree(num_members);
+create index id_id_client on tour using btree(id_client);
+create index id_season on tour using btree(season);
+
