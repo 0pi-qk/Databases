@@ -1,0 +1,92 @@
+CREATE USER alex CREATEDB PASSWORD '0303';
+
+CREATE DATABASE lr1;
+
+\! chcp 1251
+
+CREATE TABLE city(
+id_city serial NOT NULL PRIMARY KEY,
+city_name varchar(25) NOT NULL
+);
+
+INSERT INTO city (city_name) VALUES ('Makhachkala');
+INSERT INTO city (city_name) VALUES ('Tuapse');
+INSERT INTO city (city_name) VALUES ('Ufa');
+INSERT INTO city (city_name) VALUES ('Tver');
+INSERT INTO city (city_name) VALUES ('Kazan');
+INSERT INTO city (city_name) VALUES ('Kursk');
+INSERT INTO city (city_name) VALUES ('Minsk');
+INSERT INTO city (city_name) VALUES ('Zlatoust');
+INSERT INTO city (city_name) VALUES ('Omsk');
+INSERT INTO city (city_name) VALUES ('Bryansk');
+
+CREATE TABLE manager(
+id_manager serial NOT NULL PRIMARY KEY,
+surname varchar(20) NOT NULL,
+date_birth date NOT NULL
+);
+
+ALTER TABLE manager ADD CHECK (date_birth<=current_date);
+INSERT INTO manager VALUES (1,'McGonagall','1935-10-04');
+INSERT INTO manager VALUES (2,'Riddle','1931-12-31');
+INSERT INTO manager VALUES (3,'Black','1959-11-03');
+INSERT INTO manager VALUES (4,'Weasley','1950-02-06');
+INSERT INTO manager VALUES (5,'Johnson','1977-10-25');
+INSERT INTO manager VALUES (6,'Lovegood','1981-02-13');
+INSERT INTO manager VALUES (7,'Delacour','1977-10-30');
+INSERT INTO manager VALUES (8,'Malfoy','1980-06-05');
+INSERT INTO manager VALUES (9,'Snape','1960-01-09');
+INSERT INTO manager VALUES (10,'Longbottom','1980-07-30');
+
+CREATE TYPE tour_type AS ENUM (
+'bus',
+'train',
+'plane'
+);
+
+CREATE TABLE info(
+id_info serial NOT NULL PRIMARY KEY,
+type_tour tour_type NOT NULL,
+price_tour integer NOT NULL,
+date_tour date NOT NULL,
+id_city integer NOT NULL,
+FOREIGN KEY (id_city) REFERENCES city (id_city)
+);
+
+INSERT INTO info VALUES (1,'bus',5000,'2021-11-15',9);
+INSERT INTO info VALUES (2,'train',8000,'2022-01-05',6);
+INSERT INTO info VALUES (3,'train',10000,'2021-12-05',1);
+INSERT INTO info VALUES (4,'plane',7000,'2022-10-03',2);
+INSERT INTO info VALUES (5,'plane',11000,'2022-07-07',7);
+INSERT INTO info VALUES (6,'train',12500,'2022-04-28',10);
+INSERT INTO info VALUES (7,'plane',25000,'2022-07-30',4);
+INSERT INTO info VALUES (8,'bus',9000,'2022-08-10',3);
+INSERT INTO info VALUES (9,'train',30000,'2022-03-01',5);
+INSERT INTO info VALUES (10,'bus',17000,'2022-06-15',8);
+
+CREATE TABLE tour(
+id_tour serial NOT NULL PRIMARY KEY,
+order_date date NOT NULL,
+order_number integer NOT NULL,
+num_members integer NOT NULL,
+id_manager integer NOT NULL,
+FOREIGN KEY (id_manager) REFERENCES manager (id_manager),
+id_info integer NOT NULL,
+FOREIGN KEY (id_info) REFERENCES info (id_info)
+);
+
+INSERT INTO tour VALUES (1,'2021-09-03',106,20,9,10);
+INSERT INTO tour VALUES (2,'2021-08-10',104,10,10,9);
+INSERT INTO tour VALUES (3,'2021-09-20',108,15,2,8);
+INSERT INTO tour VALUES (4,'2021-07-01',103,17,3,7);
+INSERT INTO tour VALUES (5,'2021-09-26',110,16,5,6);
+INSERT INTO tour VALUES (6,'2021-01-19',101,14,8,5);
+INSERT INTO tour VALUES (7,'2021-05-21',102,15,4,4);
+INSERT INTO tour VALUES (8,'2021-08-30',105,12,6,3);
+INSERT INTO tour VALUES (9,'2021-09-25',109,25,7,2);
+INSERT INTO tour VALUES (10,'2021-09-11',107,11,1,1);
+
+CREATE TABLE _order AS
+
+SELECT order_date, surname, type_tour, city_name, date_tour, price_tour FROM
+manager, info, city, tour WHERE info.id_city=city.id_city AND tour.id_manager=manager.id_manager AND tour.id_info=info.id_info;
