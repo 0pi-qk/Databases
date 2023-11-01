@@ -1,0 +1,100 @@
+CREATE TABLE bird(
+id_bird SERIAL PRIMARY KEY NOT NULL,
+genus varchar(25) NULL,
+species varchar(25)[] NULL
+);
+
+INSERT INTO bird VALUES (1,'Ara','{
+"Great_green_macaw",
+"Blue-and-yellow_macaw",
+"Green-winged_macaw",
+"Scarlet_macaw",
+"Military_macaw"
+}');
+
+INSERT INTO bird VALUES (2,'Aratinga','{
+"Sun_parakeet",
+"Sulphur-breasted_parakeet",
+"Jandaya_parakeet",
+"Golden-capped_parakeet",
+"Nanday_parakeet"
+}');
+
+INSERT INTO bird VALUES (3,'Cockatoo','{
+"Blue-eyed_cockatoo",
+"White_cockatoo",
+"Salmon-crested_cockatoo",
+"Yellow-crested_cockatoo",
+"Sulphur-crested_cockatoo"
+}');
+
+INSERT INTO bird VALUES (4,'Toucan','{
+"Aulacorhynchus",
+"Pteroglossus",
+"Selenidera",
+"Andigena",
+"Ramphastos"
+}');
+
+INSERT INTO bird VALUES (5,'Penguin','{
+"Aptenodytes",
+"Pygoscelis",
+"Eudyptula",
+"Spheniscus",
+"Megadyptes"
+}');
+
+INSERT INTO bird VALUES (6,'Laridae','{
+"Anous",
+"Gygis",
+"Rynchops",
+"Rissa",
+"Xema"
+}');
+
+CREATE TABLE actors(
+id_actor serial PRIMARY KEY NOT NULL,
+name_surname varchar(25)[][] NOT NULL
+);
+
+INSERT INTO actors VALUES (1,'{{"Daniel","Radcliffe"},{"Rupert", "Grint"}}');
+INSERT INTO actors VALUES (2,'{{"Emma","Watson"},{"Richard", "Harris"}}');
+INSERT INTO actors VALUES (3,'{{"Alan","Rickman"},{"Maggie", "Smith"}}');
+INSERT INTO actors VALUES (4,'{{"Robbie","Coltrane"},{"Tom", "Felton"}}');
+INSERT INTO actors VALUES (5,'{{"Matthew","Lewis"},{"David", "Bradley"}}');
+INSERT INTO actors VALUES (6,'{{"Bonnie","Wright"},{"Alfred", "Enoch"}}');
+
+
+SELECT species[4] FROM bird;
+
+SELECT species[4] FROM bird WHERE id_bird = 1;
+
+SELECT species[2] FROM bird WHERE species[2] IS NOT NULL;
+
+SELECT species[7] FROM bird WHERE species[7] IS NOT NULL;
+
+SELECT name_surname[1][1] AS name, name_surname[1][2] AS surname FROM actors;
+
+SELECT species[2:3] FROM bird;
+
+SELECT array_dims(species) FROM bird;
+
+
+UPDATE bird SET species[:3] ='{"Red-fronted_macaw", "Chestnut-fronted_macaw", "Cuban_macaw"}' WHERE id_bird = 1;
+
+UPDATE bird SET species[4] = 'Red-vented_cockatoo' WHERE id_bird = 3;
+
+
+SELECT * FROM info WHERE type_tour = 'plane' AND price_tour= (SELECT min(price_tour) FROM info WHERE type_tour = 'plane');
+
+SELECT * FROM info WHERE type_tour = 'train' AND price_tour= (SELECT max(price_tour) FROM info WHERE type_tour = 'train');
+
+SELECT count(type_tour) FROM info WHERE type_tour='bus';
+
+SELECT avg(price_tour) FROM info JOIN city ON info.id_city=city.id_city
+WHERE city_name='Moscow';
+
+SELECT sum(price_tour) FROM info
+JOIN tour ON info.id_info=tour.id_info
+JOIN manager ON manager.id_manager=tour.id_manager
+WHERE experience>'10';
